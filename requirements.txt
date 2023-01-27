@@ -1,0 +1,5 @@
+wheel
+Cython
+pillow
+six
+pytoshop

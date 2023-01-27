@@ -1,0 +1,6 @@
+{
+    "python.pythonPath": "c:\\Program Files\\Adobe\\Adobe Substance 3D Painter\\resources\\pythonsdk\\python.exe",
+    "python.analysis.extraPaths": [
+        "C:\\Program Files\\Adobe\\Adobe Substance 3D Painter\\resources\\python\\modules"
+    ]
+}

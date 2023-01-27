@@ -100,7 +100,7 @@ class ExportDialog(QDialog):
 
         self.exportBitDepth = QComboBox()
         self.exportBitDepth.addItems(["8", "16", "32"])
-        self.exportPadding.setCurrentIndex(0)
+        self.exportBitDepth.setCurrentIndex(0)
         self.exportConfigLayout.addRow(QLabel("BitDepth"), self.exportBitDepth)
 
         self.dialogButtonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)

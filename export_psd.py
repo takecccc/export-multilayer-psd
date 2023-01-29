@@ -1,6 +1,8 @@
 from .logging_util import log_info, log_warn, log_error
 import substance_painter.js as js
 import json
+import os
+import tempfile
 from .tree_item import TreeItem
 from enum import Enum
 from PySide2.QtWidgets import QProgressDialog
@@ -18,7 +20,7 @@ class ExportResult(Enum):
     SUCCEED = 1
     CANCELED = 2
 
-def export_channel(exportPath, docStruct, material_index, channel, exportConfig, parent=None):
+def export_channel(exportPath, tmpdir, docStruct, material_index, channel, exportConfig, parent=None):
     material = docStruct["materials"][material_index]
     materialName = material["name"]
     stackName = material["stacks"][0]["name"]
@@ -74,7 +76,10 @@ def export_channel(exportPath, docStruct, material_index, channel, exportConfig,
         }.get(painterMode, BlendMode.normal)
         return blendMode
     
+    tmp_filename_base = os.path.join(tmpdir, materialName + "_" + stackName + "_" + channel)
+    tmp_filename_base = tmp_filename_base.replace("\\", "/")
     filename_base = exportPath + materialName + "_" + stackName + "_" + channel
+    filename_base = filename_base.replace("\\", "/")
     
     layer_records = []
     layer_no = 0
@@ -96,14 +101,14 @@ def export_channel(exportPath, docStruct, material_index, channel, exportConfig,
     progress.show()
 
     def getMaskImage(layer):
-        filename = filename_base + "_" + str(layer["uid"]) + "_mask.png"
+        filename = tmp_filename_base + "_" + str(layer["uid"]) + "_mask.png"
         script = f'alg.mapexport.save([{layer["uid"]}, "mask"], "{filename}", {json.dumps(exportConfig)});'
         js.evaluate(script)
         mask_img = np.asarray(Image.open(filename, mode="r"))
         return mask_img
     
     def getLayerImage(layer):
-        filename = filename_base + "_" + str(layer["uid"]) + ".png"
+        filename = tmp_filename_base + "_" + str(layer["uid"]) + ".png"
         script = f'alg.mapexport.save([{layer["uid"]}, "{channel}"], "{filename}", {json.dumps(exportConfig)});'
         js.evaluate(script)
         layer_img = np.asarray(Image.open(filename, mode="r", ))
@@ -217,19 +222,20 @@ def export_channel(exportPath, docStruct, material_index, channel, exportConfig,
     return ExportResult.SUCCEED
 
 def export_psd(docStruct, exportMap:TreeItem, exportDir, exportConfig, parent=None):
-    projectName = js.evaluate("alg.project.name()")
-    exportPath = exportDir + "/" + projectName + "_psd_export/"
-    # log_info(f"exportPath = {exportPath}")
-    # log_info(docStruct)
-    for material_index in range(exportMap.childCount()):
-        materialItem = exportMap.child(material_index)
-        materialName = materialItem.data("name")
-        for channel_index in range(materialItem.childCount()):
-            channelItem = materialItem.child(channel_index)
-            channelName = channelItem.data("name")
-            if(channelItem.getCheckState("name") == True):
-                log_info(f"export {materialName}.{channelName}")
-                export_result = export_channel(exportPath, docStruct, material_index, channelName, exportConfig, parent)
-                if export_result == ExportResult.CANCELED:
-                    return ExportResult.CANCELED
+    with tempfile.TemporaryDirectory() as tmpdir:
+        projectName = js.evaluate("alg.project.name()")
+        exportPath = exportDir + "/" + projectName + "_psd_export/"
+        # log_info(f"exportPath = {exportPath}")
+        # log_info(docStruct)
+        for material_index in range(exportMap.childCount()):
+            materialItem = exportMap.child(material_index)
+            materialName = materialItem.data("name")
+            for channel_index in range(materialItem.childCount()):
+                channelItem = materialItem.child(channel_index)
+                channelName = channelItem.data("name")
+                if(channelItem.getCheckState("name") == True):
+                    log_info(f"export {materialName}.{channelName}")
+                    export_result = export_channel(exportPath, tmpdir, docStruct, material_index, channelName, exportConfig, parent)
+                    if export_result == ExportResult.CANCELED:
+                        return ExportResult.CANCELED
     return ExportResult.SUCCEED

@@ -145,9 +145,15 @@ class ExportDialog(QDialog):
             "keepAlpha": True,
         }
         
-        export_psd.export_psd(self.documentStructure, self.exportMaps, exportDir, exportConfig)
-        
-        self.accept()
+        result = export_psd.export_psd(self.documentStructure, self.exportMaps, exportDir, exportConfig, self)
+        if result == export_psd.ExportResult.CANCELED:
+            QMessageBox.information(
+                self,
+                "Information",
+                "The export of the multi-layer PSD file was canceled."
+                )
+        else:
+            self.accept()
     
     def exec_(self):
         if self.cancel:

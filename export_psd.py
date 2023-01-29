@@ -2,6 +2,9 @@ from .logging_util import log_info, log_warn, log_error
 import substance_painter.js as js
 import json
 from .tree_item import TreeItem
+from enum import Enum
+from PySide2.QtWidgets import QProgressDialog
+from PySide2.QtCore import Qt
 
 from pytoshop.core import PsdFile
 from pytoshop.layers import LayerRecord, LayerMask, LayerAndMaskInfo, LayerInfo, ChannelImageData
@@ -11,7 +14,11 @@ from pytoshop.tagged_block import TaggedBlock, SectionDividerSetting, UnicodeLay
 from PIL import Image
 import numpy as np
 
-def export_channel(exportPath, docStruct, material_index, channel, exportConfig):
+class ExportResult(Enum):
+    SUCCEED = 1
+    CANCELED = 2
+
+def export_channel(exportPath, docStruct, material_index, channel, exportConfig, parent=None):
     material = docStruct["materials"][material_index]
     materialName = material["name"]
     stackName = material["stacks"][0]["name"]
@@ -70,6 +77,23 @@ def export_channel(exportPath, docStruct, material_index, channel, exportConfig)
     filename_base = exportPath + materialName + "_" + stackName + "_" + channel
     
     layer_records = []
+    layer_no = 0
+    def countLayer(layer):
+        count = 1
+        isGroup = "layers" in layer
+        if isGroup:
+            for childLayer in layer["layers"]:
+                count += countLayer(childLayer)
+        return count
+    layer_count = 0
+    for layer in material["stacks"][0]["layers"]:
+        layer_count += countLayer(layer)
+    progress = QProgressDialog(f"Exporting {materialName}_{stackName}_{channel}", "Cancel", 0, layer_count, parent)
+    progress.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
+    progress.resize(400,50)
+    progress.setWindowTitle(f"Exporting {materialName}_{stackName}_{channel}")
+    progress.setWindowModality(Qt.WindowModal)
+    progress.show()
 
     def getMaskImage(layer):
         filename = filename_base + "_" + str(layer["uid"]) + "_mask.png"
@@ -86,7 +110,9 @@ def export_channel(exportPath, docStruct, material_index, channel, exportConfig)
         return layer_img
 
     def processLayer(layer):
-        log_info(layer)
+        if progress.wasCanceled():
+            return ExportResult.CANCELED
+        progress.setLabelText("export " + layer["name"])
         uid = layer["uid"]
         name = layer["name"]
         isGroup = "layers" in layer
@@ -115,7 +141,9 @@ def export_channel(exportPath, docStruct, material_index, channel, exportConfig)
                 ))
             
             for childLayerStruct in layer["layers"]:
-                processLayer(childLayerStruct)
+                result = processLayer(childLayerStruct)
+                if result == ExportResult.CANCELED:
+                    return ExportResult.CANCELED
 
             channels={
                 enums.ChannelId.transparency: ChannelImageData(np.zeros((0,0), np.uint8)),
@@ -170,19 +198,29 @@ def export_channel(exportPath, docStruct, material_index, channel, exportConfig)
             if layer["hasMask"]:
                 layer_record.mask = LayerMask(0, 0, size, size)
         layer_records.append(layer_record)
+        progress.setValue(progress.value() + 1)
+        return ExportResult.SUCCEED
+
+    result = ExportResult.SUCCEED
     for layer in material["stacks"][0]["layers"]:
-        processLayer(layer)
+        result = processLayer(layer)
+        if result == ExportResult.CANCELED:
+            break
+    progress.setValue(layer_count)
+    if result == ExportResult.CANCELED:
+        return ExportResult.CANCELED
 
     layer_and_mask_info = LayerAndMaskInfo(LayerInfo(layer_records, True))
     psd = PsdFile(enums.Version.version_1, 4, size, size, bitDepth, colorMode, None, None, layer_and_mask_info, None, enums.Compression.rle)
     with open(filename_base + ".psd", "wb") as f:
         psd.write(f)
+    return ExportResult.SUCCEED
 
-def export_psd(docStruct, exportMap:TreeItem, exportDir, exportConfig):
+def export_psd(docStruct, exportMap:TreeItem, exportDir, exportConfig, parent=None):
     projectName = js.evaluate("alg.project.name()")
     exportPath = exportDir + "/" + projectName + "_psd_export/"
-    log_info(f"exportPath = {exportPath}")
-    log_info(docStruct)
+    # log_info(f"exportPath = {exportPath}")
+    # log_info(docStruct)
     for material_index in range(exportMap.childCount()):
         materialItem = exportMap.child(material_index)
         materialName = materialItem.data("name")
@@ -191,4 +229,7 @@ def export_psd(docStruct, exportMap:TreeItem, exportDir, exportConfig):
             channelName = channelItem.data("name")
             if(channelItem.getCheckState("name") == True):
                 log_info(f"export {materialName}.{channelName}")
-                export_channel(exportPath, docStruct, material_index, channelName, exportConfig)
+                export_result = export_channel(exportPath, docStruct, material_index, channelName, exportConfig, parent)
+                if export_result == ExportResult.CANCELED:
+                    return ExportResult.CANCELED
+    return ExportResult.SUCCEED

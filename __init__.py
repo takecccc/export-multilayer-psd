@@ -1,5 +1,6 @@
 from .logging_util import log_info, log_warn, log_error
 from PySide2 import QtWidgets
+from PySide2.QtCore import Qt
 import substance_painter.ui
 
 if "export_dialog" in locals():
@@ -15,6 +16,7 @@ def export():
     log_info("export")
     main_window = substance_painter.ui.get_main_window()
     dialog = export_dialog.ExportDialog(parent=main_window)
+    dialog.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
     dialog.exec_()
 
 def start_plugin():

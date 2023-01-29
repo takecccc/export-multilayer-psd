@@ -10,7 +10,7 @@ SubstancePainter用のマルチレイヤーpsdのエクスポートプラグイ�
 # How to Install
 1. pythonプラグインフォルダを開く
    `Menu > Python > プラグインフォルダフォルダー`で開けます。
-   特に設定を変えていなければ、`%userprofile%\Documents\Adobe\Adobe Substance 3D Painter\plugins\`のはず。
+   特に設定を変えていなければ、`%userprofile%\Documents\Adobe\Adobe Substance 3D Painter\python\plugins\`のはず。
 2. 解凍済みのこのフォルダをpythonプラグインフォルダに配置
 3. setup.batを実行して、依存するpythonモジュールをインストール
 

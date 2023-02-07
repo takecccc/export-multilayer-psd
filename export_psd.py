@@ -124,6 +124,7 @@ def export_channel(exportPath, tmpdir, docStruct, material_index, channel, expor
         blendModes = js.evaluate(f"alg.mapexport.layerBlendingModes({uid});")[channel]
         blendMode = convert_blending_mode(blendModes["mode"], isGroup)
         opacity = int(blendModes["opacity"]/100 * 255)
+        visible = layer["enabled"]
         if isGroup:
             # layerGroup
 
@@ -163,7 +164,7 @@ def export_channel(exportPath, tmpdir, docStruct, material_index, channel, expor
             layer_record = LayerRecord(
                 top=0, left=0, bottom=0, right=0,
                 blend_mode=blendMode, opacity=opacity, clipping=False,
-                transparency_protected=False, visible=True,
+                transparency_protected=False, visible=visible,
                 pixel_data_irrelevant=False,
                 name=name,
                 channels=channels,
@@ -192,7 +193,7 @@ def export_channel(exportPath, tmpdir, docStruct, material_index, channel, expor
             layer_record = LayerRecord(
                 top=0, left=0, bottom=size, right=size,
                 blend_mode=blendMode, opacity=opacity, clipping=False,
-                transparency_protected=False, visible=True,
+                transparency_protected=False, visible=visible,
                 pixel_data_irrelevant=False,
                 name=str(name),
                 channels=channels,

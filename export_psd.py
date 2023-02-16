@@ -226,6 +226,9 @@ def export_psd(docStruct, exportMap:TreeItem, exportDir, exportConfig, parent=No
     with tempfile.TemporaryDirectory() as tmpdir:
         projectName = js.evaluate("alg.project.name()")
         exportPath = exportDir + "/" + projectName + "_psd_export/"
+        if not os.path.exists(exportPath):
+            os.mkdir(exportPath)
+            
         # log_info(f"exportPath = {exportPath}")
         # log_info(docStruct)
         for material_index in range(exportMap.childCount()):

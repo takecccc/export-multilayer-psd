@@ -1,7 +1,7 @@
 from http.client import OK
 from .logging_util import log_info, log_warn, log_error
-from PySide2.QtWidgets import *
-from PySide2.QtGui import QIntValidator
+from PySide6.QtWidgets import *
+from PySide6.QtGui import QIntValidator
 from .tree_item import TreeItem, TreeModel
 import substance_painter
 import os

@@ -5,8 +5,8 @@ import os
 import tempfile
 from .tree_item import TreeItem
 from enum import Enum
-from PySide2.QtWidgets import QProgressDialog
-from PySide2.QtCore import Qt
+from PySide6.QtWidgets import QProgressDialog
+from PySide6.QtCore import Qt
 
 from pytoshop.core import PsdFile
 from pytoshop.layers import LayerRecord, LayerMask, LayerAndMaskInfo, LayerInfo, ChannelImageData

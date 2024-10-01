@@ -1,6 +1,7 @@
 from .logging_util import log_info, log_warn, log_error
-from PySide2 import QtWidgets
-from PySide2.QtCore import Qt
+from PySide6 import QtWidgets
+from PySide6 import QtGui
+from PySide6.QtCore import Qt
 import substance_painter.ui
 
 if "export_dialog" in locals():
@@ -21,7 +22,7 @@ def export():
 
 def start_plugin():
     log_info(f"{__file__} start")
-    export_action = QtWidgets.QAction("export as multilayer psd")
+    export_action = QtGui.QAction("export as multilayer psd")
     export_action.triggered.connect(export)
     substance_painter.ui.add_action(substance_painter.ui.ApplicationMenu.File, export_action)
     plugin_widgets.append(export_action)

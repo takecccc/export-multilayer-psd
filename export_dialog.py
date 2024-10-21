@@ -1,10 +1,17 @@
 from .logging_util import log_info, log_warn, log_error
 from PySide6.QtWidgets import QDialog, QFrame, QVBoxLayout, QPushButton, QTreeView, QFormLayout, QHBoxLayout, QLineEdit, QLabel, QComboBox, QDialogButtonBox, QFileDialog, QMessageBox
 from PySide6.QtGui import QIntValidator, QStandardItem
-from .tree_item import TreeItem, TreeModel
 import substance_painter
 import os
 import sys
+
+if "tree_item" in locals():
+    import importlib
+    importlib.reload(tree_item)
+else:
+    from . import tree_item
+from .tree_item import TreeItem, TreeModel
+
 if "export_psd" in locals():
     import importlib
     importlib.reload(export_psd)
@@ -41,7 +48,7 @@ class ExportDialog(QDialog):
 
         self.documentStructure = substance_painter.js.evaluate("alg.mapexport.documentStructure()")
 
-        log_info(self.documentStructure)
+        # log_info(self.documentStructure)
         if not isinstance(self.documentStructure, dict):
             log_warn("get documentStructure failed.")
             self.cancel = True

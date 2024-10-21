@@ -1,7 +1,6 @@
-from http.client import OK
 from .logging_util import log_info, log_warn, log_error
-from PySide6.QtWidgets import *
-from PySide6.QtGui import QIntValidator
+from PySide6.QtWidgets import QDialog, QFrame, QVBoxLayout, QPushButton, QTreeView, QFormLayout, QHBoxLayout, QLineEdit, QLabel, QComboBox, QDialogButtonBox, QFileDialog, QMessageBox
+from PySide6.QtGui import QIntValidator, QStandardItem
 from .tree_item import TreeItem, TreeModel
 import substance_painter
 import os
@@ -14,9 +13,6 @@ else:
 
 # append modules path to sys.path
 sys.path.append(os.path.dirname(__file__)+"/modules")
-import numpy as np
-import pytoshop
-from PIL import Image
 
 def getExportMapsFromDocStruct(doc_struct:dict):
     exportMaps = TreeItem()
@@ -46,8 +42,8 @@ class ExportDialog(QDialog):
         self.documentStructure = substance_painter.js.evaluate("alg.mapexport.documentStructure()")
 
         log_info(self.documentStructure)
-        if type(self.documentStructure) is not dict:
-            log_warn("project is not loaded.")
+        if not isinstance(self.documentStructure, dict):
+            log_warn("get documentStructure failed.")
             self.cancel = True
             return
         
@@ -121,7 +117,7 @@ class ExportDialog(QDialog):
                     childItem.setCheckState("name", state)
                 iterateChild(childItem)
         iterateChild(self.exportMaps)
-        self.exportMapsTreeView.update()
+        # self.exportMapsTreeView.update()
     
     def checkAll(self):
         self.setCheckStateForAll(True)

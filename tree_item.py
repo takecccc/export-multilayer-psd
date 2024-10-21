@@ -81,15 +81,17 @@ class TreeModel(QAbstractItemModel):
     def setData(self, index: QModelIndex, value, role:int):
         if not index.isValid():
             return False
-        item = index.internalPointer()
+        item:TreeItem = index.internalPointer()
         key = self.column(index.column())
         if role in [Qt.EditRole, Qt.DisplayRole]:
             item.setData(key, value)
+            self.dataChanged.emit(index, index)
         elif role == Qt.CheckStateRole:
-            if value == Qt.Checked:
+            if Qt.CheckState(value) == Qt.Checked:
                 item.setCheckState(key, True)
             else:
                 item.setCheckState(key, False)
+            self.dataChanged.emit(index, index)
         return True
 
     def index(self, row, column, parent:QModelIndex=QModelIndex()):

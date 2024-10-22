@@ -8,7 +8,11 @@ echo Set PYTHONBIN manually.
 exit /b
 )
 
-"%PYTHONBIN%" -m pip install -r requirements.txt
+set "MODULE_DIR=%~dp0\..\..\modules"
+set "PYTHONPATH=%MODULE_DIR%"
+
+"%PYTHONBIN%" -m pip install --upgrade -r requirements.txt -t "%MODULE_DIR%"
+"%MODULE_DIR%\bin\cythonize.exe" -i "%MODULE_DIR%\pytoshop\packbits.pyx"
 :END
 pause
 exit /b

@@ -156,6 +156,12 @@ class ExportDialog(QDialog):
                 "The export of the multi-layer PSD file was canceled."
                 )
         else:
+            log_info("The export of the multi-layer PSD file was succeeded.")
+            QMessageBox.information(
+                self,
+                "Information",
+                "The export of the multi-layer PSD file was succeeded."
+                )
             self.accept()
     
     def exec_(self):

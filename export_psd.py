@@ -82,7 +82,6 @@ def export_channel(exportPath, tmpdir, docStruct, material_index, channel, expor
     filename_base = filename_base.replace("\\", "/")
     
     layer_records = []
-    layer_no = 0
     def countLayer(layer):
         count = 1
         isGroup = "layers" in layer
@@ -146,11 +145,36 @@ def export_channel(exportPath, tmpdir, docStruct, material_index, channel, expor
                     ]
                 ))
             
+            # append children
             for childLayerStruct in layer["layers"]:
                 result = processLayer(childLayerStruct)
                 if result == ExportResult.CANCELED:
                     return ExportResult.CANCELED
+            
+            # # append group's layer(not worked)
+            # layer_image = getLayerImage(layer)
+            # channels={
+            #     enums.ChannelId.red: ChannelImageData(layer_image[:,:,0]),
+            #     enums.ChannelId.green: ChannelImageData(layer_image[:,:,1]),
+            #     enums.ChannelId.blue: ChannelImageData(layer_image[:,:,2]),
+            # }
+            # if layer_image.shape[2]==4:
+            #     channels[enums.ChannelId.transparency] = ChannelImageData(layer_image[:,:,3])
+            # layer_record = LayerRecord(
+            #     top=0, left=0, bottom=size, right=size,
+            #     blend_mode=blendMode, opacity=opacity, clipping=False,
+            #     transparency_protected=False, visible=visible,
+            #     pixel_data_irrelevant=False,
+            #     name=name + "_group",
+            #     channels=channels,
+            #     blocks=[
+            #         UnicodeLayerName(name),
+            #         ],
+            #     color_mode=colorMode
+            #     )
+            # layer_records.append(layer_record)
 
+            # append SectionDivider
             channels={
                 enums.ChannelId.transparency: ChannelImageData(np.zeros((0,0), np.uint8)),
                 enums.ChannelId.red: ChannelImageData(np.zeros((0,0), np.uint8)),
@@ -160,7 +184,6 @@ def export_channel(exportPath, tmpdir, docStruct, material_index, channel, expor
             if layer["hasMask"]:
                 mask_image = getMaskImage(layer)
                 channels[enums.ChannelId.user_layer_mask] = ChannelImageData(mask_image)
-            # append SectionDivider
             layer_record = LayerRecord(
                 top=0, left=0, bottom=0, right=0,
                 blend_mode=blendMode, opacity=opacity, clipping=False,
@@ -176,6 +199,7 @@ def export_channel(exportPath, tmpdir, docStruct, material_index, channel, expor
                 )
             if layer["hasMask"]:
                 layer_record.mask = LayerMask(0, 0, size, size)
+            layer_records.append(layer_record)
 
         else:
             # leafLayer
@@ -203,7 +227,7 @@ def export_channel(exportPath, tmpdir, docStruct, material_index, channel, expor
             )
             if layer["hasMask"]:
                 layer_record.mask = LayerMask(0, 0, size, size)
-        layer_records.append(layer_record)
+            layer_records.append(layer_record)
         progress.setValue(progress.value() + 1)
         return ExportResult.SUCCEED
 
@@ -237,7 +261,7 @@ def export_psd(docStruct, exportMap:TreeItem, exportDir, exportConfig, parent=No
             for channel_index in range(materialItem.childCount()):
                 channelItem = materialItem.child(channel_index)
                 channelName = channelItem.data("name")
-                if(channelItem.getCheckState("name") == True):
+                if(channelItem.getCheckState("name")):
                     log_info(f"export {materialName}.{channelName}")
                     export_result = export_channel(exportPath, tmpdir, docStruct, material_index, channelName, exportConfig, parent)
                     if export_result == ExportResult.CANCELED:

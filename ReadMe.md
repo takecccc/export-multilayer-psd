@@ -4,7 +4,7 @@ SubstancePainter用のマルチレイヤーpsdのエクスポートプラグイ�
 
 # 動作確認環境
 - Windows 10
-- Substance Painter 8.3.0 build 2094
+- Substance Painter 10.1.0 build 3963
 - CLIP STUDIO PAINT PRO(64bit) Version 1.12.3 202206201552
 
 # How to Install

@@ -3,6 +3,7 @@
     "python.analysis.extraPaths": [
         "C:\\Program Files\\Adobe\\Adobe Substance 3D Painter\\resources\\python\\modules",
         "c:\\program files (x86)\\steam\\steamapps\\common\\substance 3d painter 2024\\resources\\pythonsdk\\lib\\site-packages",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Substance 3D Painter 2024\\resources\\python\\modules",
         "..\\..\\modules"
     ]
 }
